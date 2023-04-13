@@ -1,0 +1,7 @@
+---
+
+roles:
+  - name: geerlingguy.java
+    version: "2.3.0"
+  - name: gantsign.maven
+    version: "5.7.1" 

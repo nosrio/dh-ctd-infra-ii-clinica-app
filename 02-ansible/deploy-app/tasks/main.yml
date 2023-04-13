@@ -1,0 +1,60 @@
+---
+# Refer to this https://docs.ansible.com/ansible-core/2.13/user_guide/become.html#risks-of-becoming-an-unprivileged-user
+- name: Install acl
+  ansible.builtin.apt:
+    name: acl
+    state: present
+  become: yes
+
+- name: Create group webapp
+  ansible.builtin.group:
+    name: webapp
+    state: present
+  become: yes
+
+- name: Create user webapp
+  ansible.builtin.user:
+    name: webapp
+    state: present
+    shell: /bin/bash
+    group: webapp
+  become: yes
+
+- name: Create /srv folder
+  ansible.builtin.file:
+    path: /srv
+    state: directory
+    mode: '0775'
+    owner: webapp
+    group: webapp
+  become: yes
+
+- name: Clone git repository
+  ansible.builtin.git:
+    repo: 'https://github.com/XimenaLargo96/ClinicaDentalApp.git'
+    dest: /srv/clinica-dental
+  become: yes
+  become_user: webapp
+
+- name: Running mvn package
+  shell: 
+    cmd: mvn package --no-transfer-progress
+  args:
+    chdir: /srv/clinica-dental
+  become: yes
+  become_user: webapp
+
+- name: Copy systemd service file to server
+  copy:
+    src: clinica-app.service
+    dest: /etc/systemd/system
+    owner: root
+    group: root
+  become: yes
+
+- name: Make sure a service unit is running
+  ansible.builtin.systemd:
+    state: restarted
+    daemon_reload: true
+    name: clinica-app
+  become: yes

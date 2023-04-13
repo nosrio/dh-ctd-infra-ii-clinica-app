@@ -1,0 +1,10 @@
+- hosts: all
+  roles:
+    - role: geerlingguy.java
+      java_packages:
+        - ca-certificates-java
+        - openjdk-17-jdk
+      become: yes
+    - role: gantsign.maven
+      maven_version: '3.9.1'
+    - role: deploy-app
